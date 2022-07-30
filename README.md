@@ -56,14 +56,14 @@ After seeing that the variable sat_verbal and sex are both significative, when t
 For those reasons, we opt for a multiple regression model with two explanatory variables: a categorical one and a numerical one. We will understand if the addition of both those variables (that were significant when individually taken) will be relevant when taken into consideration together. For this, we will analyze the t-test and the F-test (both overall and partial). Comparing the F-test from the simple regression model and the multiple regression one, we will see if the addition of the variable is beneficial or not. 
 We will consider both a parallel slopes model and an interaction model. The former is a model where the factor has an impact only on the mean of the response variable, while the latter is a model where the factor can also have an impact on the variation of the change in the mean of the response.  
 
-* ** Multiple linear regression with gpa_fy ~ sat_total and sex: *Interaction model***
+* **Multiple linear regression with gpa_fy ~ sat_total and sex: *Interaction model***
 The interaction model does not seem to be a good model for the data. From the t-test, we can understand that both the sexF coefficient and the interaction coefficient are not statistically significant, while we can reject the null hypothesis only for the sat_verbal coefficient. So the F group does not have a significant impact on the mean of the response variable with reference to the reference group (M). Also, the group does not have a significant impact on the variation of the response variable. The F-test seems to confirm this suggestion because we cannot reject the null hypothesis for the interaction term, so the change in the response in all groups can be considered equal. We try implementing a parallel slope model (without an interaction term) to solve this problem. 
 
-* ** Multiple linear regression with gpa_fy ~ sat_total and sex: *Parallel Slope model***
+* **Multiple linear regression with gpa_fy ~ sat_total and sex: *Parallel Slope model***
 The parallel slope model performs way better than the interaction model.
 The t-test, bring us to reject the null hypothesis for the coefficients of both variables at any level of significance. From the F-test, we can understand that this multiple regression model performs better than the simple regression model with the only sat_verbal as explanatory variable (using both overall and partial F test). Both the sat_verbal score and the gender of the student are significant to explain the GPA for the first college year.
 
-* ** Multiple linear regression: *Most Suitable Model Via Backward Model Selection***
+* **Multiple linear regression: *Most Suitable Model Via Backward Model Selection***
 In this last case, we have considered all the variables in our dataset. Via the backward model selection, we find the most suitable regression model. With this method, at each step, we exclude the least statistically significant variable. At the end of the process, we obtain a model with four statistically significant explanatory variables (sex, sat_verbal, sat_math, and gpa_hs). 
 By construction, the t-test brings us to reject the null hypothesis for the coefficients of all four variables at any level of significance. From the F-test, we can understand that this multiple regression model performs better than both the simple regression models and the parallel slopes regression model (with two explanatory variables). So, all the variables are significant to explain the GPA for the first college year.
 
