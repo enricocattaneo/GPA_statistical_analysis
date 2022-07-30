@@ -41,23 +41,31 @@ We start from two simple linear regressions and conclude our analysis with a mul
 
 ##### SIMPLE LINEAR REGRESSION WITH GPA_FY ~ SAT_VERBAL
 
-MODEL INFO:
-Observations: 1000
-Dependent Variable: gpa_fy
-Type: OLS linear regression 
 
-MODEL FIT:
-F(1,998) = 191.67, p = 0.00
-R² = 0.16
-Adj. R² = 0.16 
-
-Standard errors: OLS
------------------------------------------------
-                    Est.   S.E.   t val.      p
------------------ ------ ------ -------- ------
-(Intercept)         0.70   0.13     5.41   0.00
-sat_verbal          0.04   0.00    13.84   0.00
------------------------------------------------
+===================================================================================================================================
+                     Simple (sat_verbal)  Simple (sex)  Multivariate interaction  Multivariate parallel slopes  Backward selected  
+-----------------------------------------------------------------------------------------------------------------------------------
+  (Intercept)               0.701***         2.396***            0.766***                    0.597***                 0.214        
+                           (0.129)          (0.032)             (0.184)                     (0.131)                  (0.161)       
+  sat_verbal                0.036***                             0.033***                    0.037***                 0.019***     
+                           (0.003)                              (0.004)                     (0.003)                  (0.003)       
+  sex: F/M                                   0.149**            -0.160                       0.172***                 0.179***     
+                                            (0.047)             (0.257)                     (0.043)                  (0.041)       
+  sat_verbal x sexF                                              0.007                                                             
+                                                                (0.005)                                                            
+  id                                                                                                                 -0.000        
+                                                                                                                     (0.000)       
+  sat_math                                                                                                            0.019***     
+                                                                                                                     (0.003)       
+  gpa_hs: H/L                                                                                                         0.459***     
+                                                                                                                     (0.043)       
+-----------------------------------------------------------------------------------------------------------------------------------
+  R-squared                 0.161            0.010               0.176                       0.175                    0.325        
+  F                       191.673           10.130              70.914                     105.436                   95.697        
+  p                         0.000            0.002               0.000                       0.000                    0.000        
+  N                      1000             1000                1000                        1000                     1000            
+===================================================================================================================================
+  Significance: *** = p < 0.001; ** = p < 0.01; * = p < 0.05  
 
 As expected, the coefficient for the sat_verbal explanatory variable has a positive sign (0.036). In this case, the regression's F-test confirms its significance (we reject the null hypothesis). The confidence intervals (obtained with 3 different methods: regression table, percentile method, and standard error method) for this coefficient do not contain the value 0, and the p-value is equal to zero. Thus, we are also inclined to reject the t-test's null hypothesis H0. The sat_verbal's coefficient is statistically significant and, as seen from the correlation value, as explanatory power for the response variable GPA_fy. 
 
