@@ -5,7 +5,8 @@
 - [Problem Description](#problemdescription)
 - [Data Description](#datadescription)
 - [Regression Models](#regressionmodels)
-- [Results](#results)
+- [Diagnostic Analysis](#diagnostics)
+- [Conclusion](#conclusion)
 
 
 <a id='problemdescription'></a>
@@ -37,102 +38,17 @@ Summary statistics of the variables. Both univariate and multivariate data visua
 
 <a id='regressionmodels'></a>
 ## Regression Models
-We start from two simple linear regressions and conclude our analysis with a multiple regression model. For each model, we also computed confidence intervals and conducted hypothesis testing.
-
-##### SIMPLE LINEAR REGRESSION WITH GPA_FY ~ SAT_VERBAL
+We start from two simple linear regressions and conclude our analysis with a multiple regression model. For each model, we also computed manually both confidence intervals and hypothesis testing.
 
 
-===================================================================================================================================
-                     Simple (sat_verbal)  Simple (sex)  Multivariate interaction  Multivariate parallel slopes  Backward selected  
------------------------------------------------------------------------------------------------------------------------------------
-  (Intercept)               0.701***         2.396***            0.766***                    0.597***                 0.214        
-                           (0.129)          (0.032)             (0.184)                     (0.131)                  (0.161)       
-  sat_verbal                0.036***                             0.033***                    0.037***                 0.019***     
-                           (0.003)                              (0.004)                     (0.003)                  (0.003)       
-  sex: F/M                                   0.149**            -0.160                       0.172***                 0.179***     
-                                            (0.047)             (0.257)                     (0.043)                  (0.041)       
-  sat_verbal x sexF                                              0.007                                                             
-                                                                (0.005)                                                            
-  id                                                                                                                 -0.000        
-                                                                                                                     (0.000)       
-  sat_math                                                                                                            0.019***     
-                                                                                                                     (0.003)       
-  gpa_hs: H/L                                                                                                         0.459***     
-                                                                                                                     (0.043)       
------------------------------------------------------------------------------------------------------------------------------------
-  R-squared                 0.161            0.010               0.176                       0.175                    0.325        
-  F                       191.673           10.130              70.914                     105.436                   95.697        
-  p                         0.000            0.002               0.000                       0.000                    0.000        
-  N                      1000             1000                1000                        1000                     1000            
-===================================================================================================================================
-  Significance: *** = p < 0.001; ** = p < 0.01; * = p < 0.05  
 
+##### Main Regression Models Results
+<img width="1334" alt="Schermata 2022-07-30 alle 18 46 55" src="https://user-images.githubusercontent.com/80990030/181933561-f0093165-e1b1-487f-904d-fdb458d7596e.png">
+
+* **Simple Linear model with gpa_fy ~ sat_verbal**
 As expected, the coefficient for the sat_verbal explanatory variable has a positive sign (0.036). In this case, the regression's F-test confirms its significance (we reject the null hypothesis). The confidence intervals (obtained with 3 different methods: regression table, percentile method, and standard error method) for this coefficient do not contain the value 0, and the p-value is equal to zero. Thus, we are also inclined to reject the t-test's null hypothesis H0. The sat_verbal's coefficient is statistically significant and, as seen from the correlation value, as explanatory power for the response variable GPA_fy. 
 
-
-#### SIMPLE LINEAR REGRESSION WITH GPA_FY ~ SEX
-```{r}
-data_model1 %>%  # visualization
-  ggplot(aes(x = sex, y = gpa_fy)) +
-  geom_boxplot(aes(fill = sex)) +
-  labs(x = "Sex",
-       y = "College GPA",
-       title = "Relation between College GPA and Gender") +
-  scale_fill_manual(values=c("#3399FF", "#FF6666"))
-
-simple_model_sex = lm(gpa_fy ~ sex, data = data_model1) # fit regression model
-get_regression_table(simple_model_sex) # get regression table
-```
-
-##### Confidence Intervals 
-
-```{r}
-bootstrap_diff_in_means = data_model1 %>%  # bootstrap diff in means
-  specify(gpa_fy ~ sex) %>% 
-  generate(reps = 10000, type = "bootstrap") %>% 
-  calculate(stat = "diff in means", order = c("F", "M"))
-
-percentile_ci_sx = bootstrap_diff_in_means %>% # percentile method 
-  get_confidence_interval(type = "percentile", level = 0.95)
-percentile_ci_sx
-
-observed_diff_sx = data_model1 %>% # standard error method 
-  specify(gpa_fy ~ sex) %>% 
-  calculate(stat = "diff in means", order = c("F", "M"))
-
-se_ci_sx = bootstrap_diff_in_means %>% 
-  get_ci(level = 0.95, type = "se", point_estimate = observed_diff_sx)
-se_ci_sx
-
-visualize(bootstrap_diff_in_means)+ 
-  shade_confidence_interval(endpoints = percentile_ci_sx, fill = NULL, 
-                            linetype = "solid", color = "green") + 
-  shade_confidence_interval(endpoints = se_ci_sx, fill = NULL, 
-                            linetype = "dashed", color = "red") +
-  shade_confidence_interval(endpoints = c(0.057, 0.24), fill = NULL, 
-                            linetype = "dotted", color = "blue") +
-  geom_vline(xintercept = 0)
-```
-
-##### Hypothesis Testing
-
-```{r}
-# HYPOTHESIS TESTING 
-null_distribution_sx = data_model1 %>% # null distribution
-  specify(gpa_fy ~ sex) %>% 
-  hypothesize(null = "independence") %>% 
-  generate(reps = 10000, type = "permute") %>% 
-  calculate(stat = "diff in means", order = c("F", "M"))
-
-visualize(null_distribution_sx) + # visualize the p-value
-  shade_p_value(obs_stat = observed_diff_sx, direction = "both")
-
-null_distribution_sx %>% # what percentage of the null distr. is shaded?
-  get_p_value(obs_stat = observed_diff_sx, direction = "both")
-
-anova(simple_model_sex)
-```
-
+* **Simple Linear model with gpa_fy ~ sex**
 The coefficient of sexF represents the offset of the group Female from the reference group Male. The difference is positive, so it means that the Female group has a higher GPA score than the Male group. Using the ANOVA table we can see that the regression is significant at the 0.001 level (F-test statistic).  The confidence intervals (obtained with 3 different methods) do not contain the value 0, and the coefficients' p-value is close to zero and smaller than every possible significance level. Thus, we are inclined to reject the null hypothesis H0, we can say that there is a positive and statistically significant difference between the two groups.
 
 
@@ -140,115 +56,49 @@ After seeing that the variable sat_verbal and sex are both significative, when t
 For those reasons, we opt for a multiple regression model with two explanatory variables: a categorical one and a numerical one. We will understand if the addition of both those variables (that were significant when individually taken) will be relevant when taken into consideration together. For this, we will analyze the t-test and the F-test (both overall and partial). Comparing the F-test from the simple regression model and the multiple regression one, we will see if the addition of the variable is beneficial or not. 
 We will consider both a parallel slopes model and an interaction model. The former is a model where the factor has an impact only on the mean of the response variable, while the latter is a model where the factor can also have an impact on the variation of the change in the mean of the response.  
 
-#### MULTIPLE LINEAR REGRESSION WITH GPA_FY ~ SAT_TOTAL AND SEX
-##### INTERACTION MODEL
-```{r}
-gpa_interaction = lm(gpa_fy ~ sat_verbal * sex, # fit regression model
-                      data = data_model1, x = T)
-get_regression_table(gpa_interaction) # get regression table 
-summary(gpa_interaction)
-anova(gpa_interaction)
-```
+* ** Multiple linear regression with gpa_fy ~ sat_total and sex: *Interaction model***
+The interaction model does not seem to be a good model for the data. From the t-test, we can understand that both the sexF coefficient and the interaction coefficient are not statistically significant, while we can reject the null hypothesis only for the sat_verbal coefficient. So the F group does not have a significant impact on the mean of the response variable with reference to the reference group (M). Also, the group does not have a significant impact on the variation of the response variable. The F-test seems to confirm this suggestion because we cannot reject the null hypothesis for the interaction term, so the change in the response in all groups can be considered equal. We try implementing a parallel slope model (without an interaction term) to solve this problem. 
 
-The interaction model does not seem to be a good model for the data. From the t-test, we can understand that both the sexF coefficient and the interaction coefficient are not statistically significant, while we can reject the null hypothesis only for the sat_verbal coefficient. So the F group does not have a significant impact on the mean of the response variable with reference to the reference group (M). Also, the group does not have a significant impact on the variation of the response variable. The F-test seems to confirm this suggestion because we cannot reject the null hypothesis for the interaction term, so the change in the response in all groups can be considered equal. 
-
-We try implementing a parallel slope model (without an interaction term) to solve this problem. 
-
-##### PARALLEL SLOPE (DUMMY) MODEL
-```{r}
-gpa_parallel_slopes = lm(gpa_fy ~ sat_verbal + sex, # fit regression model
-                         data = data_model1, x = T)
-get_regression_table(gpa_parallel_slopes) # get regression table
-summary(gpa_parallel_slopes)
-anova(gpa_parallel_slopes)
-```
-
+* ** Multiple linear regression with gpa_fy ~ sat_total and sex: *Parallel Slope model***
 The parallel slope model performs way better than the interaction model.
 The t-test, bring us to reject the null hypothesis for the coefficients of both variables at any level of significance. From the F-test, we can understand that this multiple regression model performs better than the simple regression model with the only sat_verbal as explanatory variable (using both overall and partial F test). Both the sat_verbal score and the gender of the student are significant to explain the GPA for the first college year.
 
-##### MOST SUITABLE REGRESSION MODEL VIA BACKWARD MODEL SELECTION 
-```{r}
-gpatry = lm(gpa_fy ~ ., # fit regression model
-          data = sat_gpa, x = T)
-
-gpa_back <- step(gpatry, direction = "backward")
-
-get_regression_table(gpa_back) # get regression table
-summary(gpa_back)
-anova(gpa_back)
-```
-
+* ** Multiple linear regression: *Most Suitable Model Via Backward Model Selection***
 In this last case, we have considered all the variables in our dataset. Via the backward model selection, we find the most suitable regression model. With this method, at each step, we exclude the least statistically significant variable. At the end of the process, we obtain a model with four statistically significant explanatory variables (sex, sat_verbal, sat_math, and gpa_hs). 
 By construction, the t-test brings us to reject the null hypothesis for the coefficients of all four variables at any level of significance. From the F-test, we can understand that this multiple regression model performs better than both the simple regression models and the parallel slopes regression model (with two explanatory variables). So, all the variables are significant to explain the GPA for the first college year.
 
-#### DIAGNOSTIC PLOTS FOR LINEAR REGRESSION ANALYSIS
+<a id='diagnostics'></a>
+## Diagnostic Analysis
 
 We would focus on some diagnostic plots for linear regression analysis of our last two models: the parallel slope model with two explanatory variables and the model found via backward selection with four explanatory variables. We can check if a model works well for data in many different ways. We already have paid great attention to regression results, such as coefficients, p-values (and later R-squared) that tell us how well a model represents given data. However, also residuals could show how poorly a model reproduces data. Residuals are leftover of the outcome variable after fitting a model (predictors) to data, and they could reveal unexplained patterns in the data by the fitted model. 
 
-##### RESIDUALS 
+#### Residuals 
+* Parallel slope model![00002c](https://user-images.githubusercontent.com/80990030/181995093-f3b9fddb-6753-4a8b-97b9-084d7aab72c6.png)
+![00002e](https://user-images.githubusercontent.com/80990030/181995104-eda9b0a0-940a-4cab-a72b-5dc622c32341.png)
+* Backward model
+![000014](https://user-images.githubusercontent.com/80990030/181995129-55472f23-6441-4b8d-a4bf-0442879a8ba8.png)
+![000016](https://user-images.githubusercontent.com/80990030/181995133-ac80abb9-14e6-4630-a6f7-98ffa124aa0e.png)
 
-Parallel slope model
-
-```{r}
-res1 = residuals(gpa_parallel_slopes) 
-hist(res1, col = "green")
-shapiro.test(res1)
-qplot(sample = .stdresid, data = gpa_parallel_slopes) +
-  geom_abline(color = "green")
-skewness(res1)
-kurtosis(res1)
-```
-
-Backward model
-
-```{r}
-res2 = residuals(gpa_back) 
-hist(res2, col = "steelblue")
-shapiro.test(res2)
-qplot(sample = .stdresid, data = gpa_back) +
-  geom_abline(color = "steelblue")
-skewness(res2)
-kurtosis(res2)
-```
 
 For both regression models, we have plotted a histogram of the residuals, the normal QQ plot and computed the Shapiro-Wilk test. All these computations/visualizations are used to verify the normality of the residuals. The histogram gives us a first and easily understandable visualization of the distribution of the residuals. The normal QQ plot shows if residuals follow a straight line well or if they deviate severely. It’s good if residuals are lined well on the straight dashed line. In the Shapiro-Wilk test, the null hypothesis is that the population is normally distributed. Thus, if the p-value is less than the chosen alpha-level, then the null hypothesis is rejected and there is evidence that the data tested are not normally distributed. On the other hand, if the p-value is greater than the chosen alpha level, then the null hypothesis (that the data came from a normally distributed population) can not be rejected.
 In our particular case for both models' residuals, we observe that the visualizations suggest normally distributed residuals while the Shapiro-Wilk test suggests the opposite (in both models we reject the null hypothesis of normal distribution). This discordance of results might be due to the sample size or the fact that we are working with multiple regression models (the Shapiro-Wilk test performs better with small sample size and a single independent variable). To have a better understanding, we have also calculated the skewness and kurtosis of the residuals, which in both cases suggest normal distribution.
 
-##### RESIDUALS VS FITTED
+#### Residuals vs Fitted Values
 This plot shows if residuals have non-linear patterns. There could be a non-linear relationship between predictor variables and an outcome variable, and the pattern could show up in this plot if the model doesn’t capture the non-linear relationship.
-
-Parallel slope model
-
-```{r}
-plot(res1, ylab = "Residuals")
-plot(gpa_parallel_slopes$fitted.values, res1, xlab = "GPA", ylab = "Residuals")
-abline(h=0)
-```
-
-Backward model
-
-```{r}
-plot(res2, ylab = "Residuals")
-plot(gpa_back$fitted.values, res2, ylab = "Residuals", xlab = "GPA")
-abline(h=0)
-```
+* Parallel slope model
+![00001f](https://user-images.githubusercontent.com/80990030/181995229-2b7276fd-db6a-4008-acfe-b08eab4c4856.png)
+* Backward model
+![000024](https://user-images.githubusercontent.com/80990030/181995241-5b840e43-cd3a-4b96-94d8-1bea8063645a.png)
 
 For both models, we have plotted residuals vs fitted values. Looking at all the plots we can observe that the residuals definitely show randomness. We can use this plot to understand if residuals have non-linear patterns. Finding equally spread residuals around a horizontal line without distinct patterns, that is a good indication you don’t have non-linear relationships. Furthermore, the residuals do not appear to be equally variable across the entire range of fitted values. So, we can conclude that there is no discernible non-linear trend to the residuals and there is no indication of non-constant variance.
 
 
-##### R-SQUARED
-```{r}
-summary(simple_model_sat)$r.squared 
-summary(simple_model_sex)$r.squared 
-summary(gpa_parallel_slopes)$r.squared 
-summary(gpa_back)$r.squared 
-```
-
+#### R-Squared
 R-squared is a goodness-of-fit measure for linear regression models. This statistic indicates the percentage of the variance in the dependent variable that the independent variables explain collectively. R-squared measures the strength of the relationship between your model and the dependent variable on a 0 to 100 scale. 
 In our particular case, we have computed the R-squared for our two simple regression models, and for two multiple regression models. The R-squared for the simple regression model with sat_verbal as an explanatory variable is 16% definitely not a high value but we can see that this variable has some clear explanatory power on the data. Instead, the R-squared for the simple regression model with sex as an explanatory variable is only 1% suggesting an extremely weak relationship between this model and the dependent variable. The parallel slope model with sat_verbal and sex as independent variables has a very similar R-squared (17%) as the simple regression model with sat_verbal, highlighting the relative strength of the sat_verbal variable on the sex variable. The last model obtained with backward selection and with four independent variables has the highest R-squared value at 32%. It is still not a symptom of a strong relationship between the model and the dependent variable (gpa_fy) but is the best we got.
 
 
-### FINAL COMMENT
+## Conclusion
 
 Our analysis aimed to better understand the relationships that link college GPA with gender (a categorical variable) and the results from the SAT (a numerical variable). In the Explanatory Data Analysis, we looked at the raw values, provided summary statistics for the variables of the dataset, and some visualizations. Starting with some simple univariate data visualizations and ending with more complex multivariate data visualizations we gain a better understanding of the variables and the overall problem. Then we started with two simple linear regression models: both with the college GPA as the response variable, the first with the verbal SAT as an explanatory variable while the second with gender as the independent variable. In both cases, we found a statistically significant coefficient for our regressor. The coefficient for the sat_verbal explanatory variable had a positive sign of 0.036, as we expected. While the coefficient of the sex-F variable (representing the offset between the group Male and the group Female) had a value of 0.149. After seeing that the variables sat_verbal and sex are both significative when taken separately in a simple linear model, we enriched our analysis by constructing a multiple linear regression model. Using both gender and SAT verbal as explanatory variables of our multiple regression model we had two possible approaches to choose from: an interaction model and a parallel slopes model. We started analyzing the interaction model that turned out to be not good for our data, the interaction term was not statistically significant. For this reason, we opted for a parallel slope model that differs from the interaction model because it does not contain any interaction term. The parallel slope model performs way better than the interaction model. Both explanatory variables were statistically significant so not only when taken separately but also when taken together both sat_verbal score and gender are significant to explain the GPA for the first college year. This was the model that we thought about as a response to the problem that we posed at the beginning of our analysis. To produce a further and more complete analysis we decided to consider all the variables in our dataset. We tried to find the most suitable regression model via backward model selection. With this method, at each step, we exclude the least statistically significant variable. At the end of the process, we obtained a model with four statistically significant explanatory variables (sex, sat_verbal, sat_math, and gpa_hs). From the F-test, we understood that this multiple regression model performs better than both the simple regression models and the parallel slopes regression model (with two explanatory variables). At the end of our analysis, we focused on some diagnostic plots and tests for our two best models: the parallel slopes model (with two independent variables) and the model produced via backward selection (with 4 independent variables). We first observed the residuals of our models producing a histogram, the Shapiro-Wilk normality test, the normal QQ plot, and skewness and kurtosis. All these components of this evaluation brought us to have a better understanding of the normality or not of the residuals' distribution. We obtained some discordant results (all the visualizations and the kurtosis and skewness indexes suggest normality, while the Shapiro-Wilk test suggests not normal distribution). This difference in the results may be due to due to the sample size of our data or the fact that we are working with multiple regression models (the Shapiro-Wilk test performs better with a small sample size and a single independent variable). Then we plotted the residuals and the fitted values, the residuals of both models showed randomness and they are not characterized by any non-linear pattern. So, we concluded that no discernible non-linear trend was noticeable. Lastly, we computed the R-Squared (goodness of fit measure for linear regression models) for each of the four models that we had previously considered. For all four models, the R-squared assumed low values. In particular, the simple regression model with the only gender as an independent variable had an R-squared of only 1%. The model with the best performance in terms of R-squared was the last model with four independent variables (32%).
 
